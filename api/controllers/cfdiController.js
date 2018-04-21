@@ -1,7 +1,8 @@
 'use strict';
 
 var fs = require('fs'),
-multer = require('multer');
+multer = require('multer'),
+parserXmltoJson = require('xml2json');
 
 const Authentication = require('sw-sdk-nodejs').Authentication;
 const StampService = require('sw-sdk-nodejs').StampService;
@@ -84,23 +85,41 @@ function uploadXml( req, res ){
 
         var ext_split = file_name.split('.');
         var file_ext = ext_split[ 1 ];
-console.log( file_name, file_path, file_split, ext_split, body )
+//console.log( file_name, file_path, file_split, ext_split, body )
         var newname = './'+ _path +'/'+ 
             body.client +'_'+
             body.rfc +'_'+ 
             body.date + '.xml';
         if( file_ext == 'xml' || req.files.hasOwnProperty('xml') ){
-            fs.rename( './'+ file_path, newname, function( err ){
-                if( err ) throw err;
-                console.log('File Renamed.');
-            });
+            fs.renameSync( './'+ file_path, newname );
 
-            res.status( 200 ).send({
+            var response    = {
                 file_path : file_path,
-                file_split:  file_split,
+                file_split: file_split,
                 file_name : file_name,
                 newname: newname
-            });
+            };
+            if( fs.existsSync( newname )){
+                var _xmlFile    = fs.readFileSync( newname, "utf8" ),
+                _jsonXml    = parserXmltoJson
+                    .toJson( _xmlFile, { object: true, reversible: true });
+
+                let sXml    = Object.assign( {}, _jsonXml["cfdi:Comprobante"] );
+                delete sXml['xmlns:cfdi'];
+                delete sXml['xmlns:xsi'];
+                delete sXml['xsi:schemaLocation'];
+                delete sXml['Certificado'];
+                delete sXml['Sello'];
+
+                sXml   = getOriginalString( sXml );
+                console.log( sXml );
+                //processXmlFile( _jsonXml );
+                response.status    = 200;
+            } else {
+                response.status    = 401;
+            }
+
+            res.status( response.status ).send( response );
         } else {
             fs.unlink( file_path, ( err ) => {
                 if( err ){
@@ -114,6 +133,27 @@ console.log( file_name, file_path, file_split, ext_split, body )
             message: 'No se han subido archivos'
         });
     }
+}
+
+function processXmlFile( ){
+    console.log('File Renamed.', err );
+    
+    return;
+}
+
+function getOriginalString( xmlJson, originalString = '|' ){
+    // originalString    = originalname || '|';
+    Object.keys( xmlJson )
+    .forEach(( index, i ) => {
+        if( typeof xmlJson[ index ] === "object"){
+            //console.log( index, typeof xmlJson[ index ] );
+            originalString    = getOriginalString( xmlJson[ index ], originalString );
+        } else {
+            originalString    += "|"+ xmlJson[ index ];
+        }
+    });
+
+    return originalString;
 }
 
 module.exports = {
