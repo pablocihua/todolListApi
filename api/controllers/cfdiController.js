@@ -111,7 +111,7 @@ function uploadXml( req, res ){
                 delete sXml['Certificado'];
                 delete sXml['Sello'];
 
-                sXml   = getOriginalString( sXml );
+                sXml   = getOriginalString( sXml ) + '||';
                 console.log( sXml );
                 //processXmlFile( _jsonXml );
                 response.status    = 200;
