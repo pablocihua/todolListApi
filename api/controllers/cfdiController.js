@@ -2,7 +2,13 @@
 
 var fs = require('fs'),
 multer = require('multer'),
-parserXmltoJson = require('xml2json');
+parserXmltoJson = require('xml2json'),
+sha256 = require('sha256'),
+ursa = require('ursa')
+, crt
+, key
+, msg
+;
 
 const Authentication = require('sw-sdk-nodejs').Authentication;
 const StampService = require('sw-sdk-nodejs').StampService;
@@ -83,8 +89,8 @@ function uploadXml( req, res ){
             _path     = file_split[ 0 ],
             body      = req.body;
 
-        var ext_split = file_name.split('.');
-        var file_ext = ext_split[ 1 ];
+        var ext_split    = file_name.split('.');
+        var file_ext     = ext_split[ 1 ];
 //console.log( file_name, file_path, file_split, ext_split, body )
         var newname = './'+ _path +'/'+ 
             body.client +'_'+
@@ -112,6 +118,7 @@ function uploadXml( req, res ){
                 delete sXml['Sello'];
 
                 sXml   = getOriginalString( sXml ) + '||';
+                sXml   = digestionOriginalString( sXml );
                 console.log( sXml );
                 //processXmlFile( _jsonXml );
                 response.status    = 200;
@@ -135,10 +142,21 @@ function uploadXml( req, res ){
     }
 }
 
-function processXmlFile( ){
-    console.log('File Renamed.', err );
-    
-    return;
+function sealXml( string_sha256 ){
+    // var key    = key = ursa.createPrivateKey(
+    //     fs.readFileSync('./certs/server/my-server.key.pem')
+    // );
+    // var msg    = key.privateEncrypt( string_sha256 , 'utf8', 'base64');
+    // console.log('encrypted', msg, '\n');
+
+    return string_sha256;
+}
+
+function digestionOriginalString( originalString ){
+    string_sha256    = sha256( originalString );
+    console.log(' String_sha256. '+ string_sha256 );
+
+    return string_sha256;
 }
 
 function getOriginalString( xmlJson, originalString = '|' ){
