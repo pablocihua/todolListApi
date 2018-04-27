@@ -119,6 +119,7 @@ function uploadXml( req, res ){
 
                 sXml   = getOriginalString( sXml ) + '||';
                 sXml   = digestionOriginalString( sXml );
+                sXml   = sealXml( sXml );
                 console.log( sXml );
                 //processXmlFile( _jsonXml );
                 response.status    = 200;
@@ -143,17 +144,23 @@ function uploadXml( req, res ){
 }
 
 function sealXml( string_sha256 ){
-    // var key    = key = ursa.createPrivateKey(
-    //     fs.readFileSync('./certs/server/my-server.key.pem')
-    // );
-    // var msg    = key.privateEncrypt( string_sha256 , 'utf8', 'base64');
-    // console.log('encrypted', msg, '\n');
+    var path_file_cert    = '../../files_owner/certs/CSD_Colegio_Cuauhtli_Campus_Cihuatlan_CEC140210UX4_20140923_115037.key';
+    if( fs.existsSync( path_file_cert )){
+        console.log('exists file key');
+        // var key    = key = ursa.createPrivateKey(
+        //     fs.readFileSync( path_file_cert )
+        // );
+        // var string_sha256    = key.privateEncrypt( string_sha256 , 'utf8', 'base64');
+        // console.log('encrypted', string_sha256, '\n');
+    } else {
+        return false;
+    }
 
     return string_sha256;
 }
 
 function digestionOriginalString( originalString ){
-    string_sha256    = sha256( originalString );
+    var string_sha256    = sha256( originalString );
     console.log(' String_sha256. '+ string_sha256 );
 
     return string_sha256;
