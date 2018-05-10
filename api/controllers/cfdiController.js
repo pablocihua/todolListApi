@@ -144,14 +144,16 @@ function uploadXml( req, res ){
 }
 
 function sealXml( string_sha256 ){
-    var path_file_cert    = '../../files_owner/certs/CSD_Colegio_Cuauhtli_Campus_Cihuatlan_CEC140210UX4_20140923_115037.key';
+    var path_file_cert    = __dirname +'/../../files_owner/certs/CSD_Colegio_Cuauhtli_Campus_Cihuatlan_CEC140210UX4_20140923_115037.key';
+console.log( __dirname, path_file_cert, fs.existsSync( path_file_cert ) );
     if( fs.existsSync( path_file_cert )){
         console.log('exists file key');
-        // var key    = key = ursa.createPrivateKey(
+        // var key    = key = ursa.createPublicKey(
         //     fs.readFileSync( path_file_cert )
         // );
-        // var string_sha256    = key.privateEncrypt( string_sha256 , 'utf8', 'base64');
-        // console.log('encrypted', string_sha256, '\n');
+        var key = fs.readFileSync( path_file_cert );
+        var string_sha256    = key.privateEncrypt( string_sha256, 'P0mp3y323', 'utf8', 'base64');
+        console.log('encrypted', string_sha256, '\n');
     } else {
         return false;
     }
