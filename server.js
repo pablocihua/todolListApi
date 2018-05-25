@@ -2,7 +2,7 @@
 var express = require('express')
 app =  express(),
 port = process.env.PORT || 3000,
-mongoose = require('mongoose'),
+// mongoose = require('mongoose'),
 Task = require('./api/models/todoListModel'),
 bodyParser = require('body-parser');
 
@@ -34,9 +34,9 @@ app.use('/api', routes );
 app.use('/api', cfdi_route );
 
 
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost/Tododb', ( err, res )=>{
+// mongoose.Promise = global.Promise;
+// mongoose.connect('mongodb://localhost/Tododb', ( err, res )=>{
     app.listen( port, () => {
         console.log('todo list RESTful API started on: ' + port );
     });
-});
+// });
