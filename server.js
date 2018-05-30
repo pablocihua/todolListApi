@@ -1,8 +1,15 @@
 'use strict'
 
-var express    = require('express'),
-    app        =  express(),
-    bodyParser = require('body-parser');
+var express        = require('express'),
+    bodyParser     = require('body-parser'),
+    NodeCouchDb    = require('node-couchdb'),
+    app            =  express();
+
+/* const config    = require('./config/config');
+
+const couch    = new NodeCouchDb({
+    auth: config.databases.couchdb.auth
+}); */
 
 // Load routes.
 var cfdi_route        = require('./api/routes/cfdiRouter'),

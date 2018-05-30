@@ -1,9 +1,10 @@
 'use strict'
 
 var jwt       = require('jwt-simple'),
-    moment    = require('moment');
+    moment    = require('moment'),
+    _config   = require('../../config/config');
 
-var secret    = 'key_secret_the_application_web';
+var secret    = _config.jwt.secret;
 
 exports.ensureAuth    = function( req, res, next ){
     if( !req.headers.authorization ){

@@ -1,0 +1,16 @@
+{
+    "databases": {
+        "couchdb": {
+            "host": "",
+            "auth": {
+                "user": "admin",
+                "password": "1957"
+            },
+            "dbName": "login",
+            "viewUrl": "_design/all/_view/all"
+        }
+    },
+    "jwt": {
+        "secret": "key_secret_this_application_web"
+    }
+}

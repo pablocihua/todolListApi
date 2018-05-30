@@ -1,9 +1,10 @@
 'use strict'
 
 var jwt       = require('jwt-simple'),
-    moment    = require('moment');
+    moment    = require('moment'),
+    _config   = require('../../config/config.json');
 
-var secret    = 'key_secret_this_application_web';
+var secret    = _config.jwt.secret;
 
 exports.createToken    = function( user ){
     var payload    = {
@@ -16,4 +17,6 @@ exports.createToken    = function( user ){
         iat: moment().unix(),
         exp: moment().add( 3, 'minutes' ).unix
     };
+
+    jwt.encode( payload, secret );
 };

@@ -10,6 +10,7 @@ var md_auth    = require('../middlewares/authenticated');
 var multipart    = require('connect-multiparty'),
     md_upload    = multipart({ uploadDir: './uploads/users'});
 
-api.get('/test-controller', md_auth.ensureAuth, AuthController.test );
+api.get('/test-controller', AuthController.test );
+api.post('/login', AuthController.login );
 
 module.exports = api;
