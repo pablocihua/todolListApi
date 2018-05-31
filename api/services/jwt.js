@@ -18,5 +18,5 @@ exports.createToken    = function( user ){
         exp: moment().add( 3, 'minutes' ).unix
     };
 
-    jwt.encode( payload, secret );
+    return jwt.encode( payload, secret );
 };

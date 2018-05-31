@@ -2,7 +2,7 @@ var NodeCouchDb    = require('node-couchdb');
 
 const config    = require('../../config/config');
 
-function couch(){
+function conexionCouch(){
     var couchDb    = new NodeCouchDb({
         auth: config.databases.couchdb.auth
     });
@@ -11,5 +11,5 @@ function couch(){
 }
 
 module.exports = {
-    couch
+    conexionCouch
 };

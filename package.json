@@ -19,6 +19,7 @@
     "mongoose": "^5.0.14",
     "multer": "^1.3.0",
     "node-couchdb": "^1.3.0",
+    "nodemon": "^1.17.5",
     "sha256": "^0.2.0",
     "sw-sdk-nodejs": "^1.1.4",
     "ursa": "^0.9.4",

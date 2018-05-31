@@ -6,8 +6,14 @@
                 "user": "admin",
                 "password": "1957"
             },
-            "dbName": "login",
-            "viewUrl": "_design/all/_view/all"
+            "dbnames": {
+                "dbName": "zmpapelerias",
+                "views": {
+                    "users": "_design/users/_view/users",
+                    "books": "_design/books/_view/books",
+                    "clients": "_design/clients/_view/clients"
+                }
+            }
         }
     },
     "jwt": {
