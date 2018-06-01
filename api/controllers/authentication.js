@@ -6,7 +6,7 @@ var bcrypt    = require('bcrypt-nodejs'),
     path      = require('path');
 
 const config    = require('../../config/config'),
-      couch     = require('../models/couchdbModel');
+      couch     = require('../models/couchdbModel').conexionCouch();
 
 // Service jwt
 var jwt = require('../services/jwt');
@@ -20,18 +20,17 @@ function test( req, res ){
 
 function login( req, res ){
     var params      = req.body,
-        username    = params.username,
+        email       = params.email,
         password    = params.password;
 
     const couchDb    = config.databases.couchdb,
           dbNames    = couchDb.dbnames,
           dbName     = dbNames.dbName,
-          viewUrl    = dbNames.views.users;
+          viewUrl    = dbNames.views.users.by_email;
 
     var mangoQuery    = {
         "selector": {
-            "username": { "$eq": username },
-            //"password": { "$eq": password },
+            "email": { "$eq": email.toUpperCase() },
             "tipodedocumento": { "$eq": "user" }
         },
         limit: 1,
@@ -39,13 +38,25 @@ function login( req, res ){
     };
 
     couch
-    .conexionCouch()
+    .search( 'users', 'by_email', { email: email.toLowerCase() }, function( err, doc ){
+        if( !err ){
+            doc.rows.forEach(function( d ){
+                console.log( d.value );
+            });
+           res.status( 200 ).send({ val: doc.rows });
+        }
+console.log( err )
+        res.status( 200 ).send( err );
+    });
+
+    //.conexionCouch()
+    /* couch
     .mango( dbName, mangoQuery, {} )
     .then(( data ) => {
-        // console.log( data, params );
-        /* bcrypt.hash( password, null, null, ( err, hash ) => {
+        console.log( data, params );
+        bcrypt.hash( password, null, null, ( err, hash ) => {
             console.log( hash )
-        }) */
+        })
         var user    = data.data.docs[ 0 ];
         // console.log( user, data.data.docs )
         if( user ){
@@ -63,7 +74,7 @@ function login( req, res ){
                     res.status( 200 ).send({
                         title: 'Acceso a Usuarios',
                         text: 'Ok',
-                        message: 'El usuario "' + username.toUpperCase() + '" no ha podido loguearse correctamente'
+                        message: 'El usuario "' + email.toUpperCase() + '" no ha podido loguearse correctamente'
                     });
                 }
             });
@@ -74,7 +85,7 @@ function login( req, res ){
         }
     }, err => {
         res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
-    });
+    }); */
 }
 
 module.exports    = {

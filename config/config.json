@@ -1,7 +1,7 @@
 {
     "databases": {
         "couchdb": {
-            "host": "",
+            "host": "http://localhost:5984",
             "auth": {
                 "user": "admin",
                 "password": "1957"
@@ -9,9 +9,16 @@
             "dbnames": {
                 "dbName": "zmpapelerias",
                 "views": {
-                    "users": "_design/users/_view/users",
-                    "books": "_design/books/_view/books",
-                    "clients": "_design/clients/_view/clients"
+                    "users": {
+                        "all": "_design/users/_view/users",
+                        "by_email": "_design/users/_view/by_email"
+                    },
+                    "books": {
+                        "all" :"_design/books/_view/books"
+                    },
+                    "clients": {
+                        "all": "_design/clients/_view/clients"
+                    }
                 }
             }
         }

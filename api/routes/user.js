@@ -2,7 +2,8 @@
 
 var express = require('express');
 
-var AuthController = require('../controllers/authentication');
+var AuthController    = require('../controllers/authentication'),
+    UserController    = require('../controllers/user');
 
 var api        = express.Router();
 var md_auth    = require('../middlewares/authenticated');
@@ -12,5 +13,6 @@ var multipart    = require('connect-multiparty'),
 
 api.get('/test-controller', AuthController.test );
 api.post('/login', AuthController.login );
+api.post('/register', UserController.saveUser );
 
 module.exports = api;
