@@ -6,12 +6,13 @@ var bcrypt    = require('bcrypt-nodejs'),
     path      = require('path');
 
 // Models
-var Models       = require('../models/userModel'),
-    // couch        = require('../models/couchdbModel'),
-    UserModel    = Models.UserModel,
-    UserViews    = Models.UserViews,
-    // Configs
-    config       = require('../../config/config');
+const Models       = require('../models/userModel'),
+      CouchDB      = require('../models/couchdbModel'),
+      couchNano    = CouchDB.conexionNano(),
+      UserModel    = Models.UserModel,
+      UserViews    = Models.UserViews,
+      // Configs
+      config       = require('../../config/config');
 
 // Services
 var jwt    = require('../services/jwt');
@@ -34,19 +35,62 @@ function saveUser( req, res ){
 
     var _validate    = validaterequiredFields( params );
     if( _validate.isValid ){
-        // console.log( )
-        UserViews.findOneByEmail( params.email, function( error, result ){
+        // console.log( UserViews )
+        /* var first = { startkey: params.email },
+        seconds = {{{ endkey: params.email }, sort: 'asc'}, skip: 0};
+        UserViews.findOneByEmail( first, seconds, function( error, result ){
             if( error ){ res.status( 401 ).send({ message: error }) };
             console.log( error, result )
             return result;
+        }); */
+
+        var mangoQuery    = {
+            include_docs: false,
+            "selector": {
+                "email": { "$eq": params.email.toLowerCase() },
+                "tipodedocumento": { "$eq": "user" }
+            },
+            //limit: 1,
+            skip: 0
+        };
+        couchNano
+        .view( 'users', 'by_email', mangoQuery, ( error, data ) => {
+            console.log( data.rows );
+            var user    = data.rows[ 0 ].value;
+            if( user ){
+                res.status( 200 ).send({
+                    message: 'El usuario no puede registrarse.',
+                    u: params
+                });
+            } else {
+                res.status( 200 ).send({
+                    message: 'El usuario no puede registrarse.'
+                });
+                // Encripting password
+                bcrypt.hash( params.password, null, null, ( err, hash ) => {
+                    user.password = hash;
+                    // Save user in database.
+                    user.save(( err, userStored ) => {
+                        if( err ){
+                            res.status( 500 ).send({ message: 'Error al guardar el usuario'});
+                        } else {
+                            if( !userStored ){
+                                res.status( 404 ).send({ message: 'No se ha registrado el usuario'});
+                            } else {
+                                res.status( 200 ).send({ user: userStored, message: 'Se ha registrado el usuario'});
+                            }
+                        }
+                    });
+                });
+            }
         });
+
         response.message    = 'Se ha registrado el usuario.';
         response.user       = req.user;
     } else {
         response.message    = 'El usuario no puede registrarse.';
+        res.status( _status ).send( response );
     }
-
-    res.status( _status ).send( response );
 }
 
 function validaterequiredFields( fields ){

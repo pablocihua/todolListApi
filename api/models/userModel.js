@@ -9,7 +9,7 @@ const config       = require('../../config/config'),
 var couchDbModel    = require('couchdb-model'),
     couchDb         = require('./couchdbModel');
 
-var Model    = couchDbModel( couchDb.conexionCouch() ),
+var Model    = couchDbModel( couchDb.conexionNano() ),
     UserModel    = Model.create(
         {
         "name": {
@@ -65,7 +65,7 @@ var Model    = couchDbModel( couchDb.conexionCouch() ),
         },
         "tipodedocumento": "user"
     }),
-    UserViews    = couchDbModel( couchDb.conexionCouch(), {
+    UserViews    = couchDbModel( couchDb.conexionNano(), {
         views: [
             viewUsers.all,
             {

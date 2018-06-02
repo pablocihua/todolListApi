@@ -19,8 +19,7 @@ exports.ensureAuth    = function( req, res, next ){
 
     try {
         var payload = jwt.decode( token, secret, true );
-
-        if( payload.exp <= moment().unix() ){
+        if( !payload.exp || payload.exp <= moment().unix() ){
             res.status( 401 ).send({
                 message: 'La sessión ha expirado!'
             });

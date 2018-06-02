@@ -4,14 +4,23 @@
 var bcrypt    = require('bcrypt-nodejs'),
     fs        = require('fs'),
     path      = require('path');
-
-const config    = require('../../config/config'),
-      couch     = require('../models/couchdbModel').conexionCouch();
+// Loads configs and conects Db.
+const config     = require('../../config/config'),
+      CouchDB    = require('../models/couchdbModel'),
+      couchNano    = CouchDB.conexionNano(),
+      couchNode    = CouchDB.conexionNodeCouch();
+      _views       = CouchDB.getViews( couchNano );
 
 // Service jwt
-var jwt = require('../services/jwt');
+var jwt    = require('../services/jwt');
+// Call to config database.
+const couchDb    = config.databases.couchdb,
+      dbNames    = couchDb.dbnames,
+      dbName     = dbNames.dbName;
+
 
 // Actions
+
 function test( req, res ){
     res.status( 200 ).send({
         message: 'Test authentication controller test method.'
@@ -20,52 +29,34 @@ function test( req, res ){
 
 function login( req, res ){
     var params      = req.body,
-        email       = params.email,
-        password    = params.password;
-
-    const couchDb    = config.databases.couchdb,
-          dbNames    = couchDb.dbnames,
-          dbName     = dbNames.dbName,
-          viewUrl    = dbNames.views.users.by_email;
-
+    email       = params.email,
+    password    = params.password;
+    
     var mangoQuery    = {
         "selector": {
-            "email": { "$eq": email.toUpperCase() },
+            "email": { "$eq": email.toLowerCase() },
             "tipodedocumento": { "$eq": "user" }
         },
         limit: 1,
         skip: 0
     };
 
-    couch
-    .search( 'users', 'by_email', { email: email.toLowerCase() }, function( err, doc ){
-        if( !err ){
-            doc.rows.forEach(function( d ){
-                console.log( d.value );
-            });
-           res.status( 200 ).send({ val: doc.rows });
-        }
-console.log( err )
-        res.status( 200 ).send( err );
-    });
-
-    //.conexionCouch()
-    /* couch
+    couchNode
     .mango( dbName, mangoQuery, {} )
-    .then(( data ) => {
-        console.log( data, params );
-        bcrypt.hash( password, null, null, ( err, hash ) => {
+    .then( ( data ) => {
+        // console.log( data, params );
+        /* bcrypt.hash( password, null, null, ( err, hash ) => {
             console.log( hash )
-        })
+        }) */
+        // console.log( data.data.docs[ 0 ] );
         var user    = data.data.docs[ 0 ];
-        // console.log( user, data.data.docs )
         if( user ){
             bcrypt.compare( password, user.password, ( err, check ) => {
                 if( check ){
                     if( params.gettoken ){
                         res.status( 200 ).send({
                             token: jwt.createToken( user ),
-                            apiPaths: dbNames.views
+                            apiPaths: _views // dbNames.views
                         });
                     } else {
                         res.status( 200 ).send( user );
@@ -83,10 +74,60 @@ console.log( err )
                 message: 'El usuario no ha podido loguearse!'
             });
         }
-    }, err => {
+    }, 
+    ( err ) => {
         res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
-    }); */
+    }
+    );
 }
+
+/*function loginNano( req, res ){
+    var params      = req.body,
+    email       = params.email,
+    password    = params.password;
+    
+    const viewUrl    = dbNames.views.users.by_email;
+
+    var mangoQuery    = {
+        include_docs: false,
+        "selector": {
+            "email": { "$eq": email.toLowerCase() },
+            "tipodedocumento": { "$eq": "user" }
+        },
+        limit: 1,
+        skip: 0
+    };
+
+    couch
+    .view( 'users', 'by_email', mangoQuery, ( error, data ) => {
+        // console.log( data, params );
+        var user    = data.rows[ 0 ].value;
+        if( user ){
+            bcrypt.compare( password, user.password, ( err, check ) => {
+                if( check ){
+                    if( params.gettoken ){
+                        res.status( 200 ).send({
+                            token: jwt.createToken( user ),
+                            apiPaths: _views // dbNames.views
+                        });
+                    } else {
+                        res.status( 200 ).send( user );
+                    }
+                } else {
+                    res.status( 200 ).send({
+                        title: 'Acceso a Usuarios',
+                        text: 'Ok',
+                        message: 'El usuario "' + email.toUpperCase() + '" no ha podido loguearse correctamente'
+                    });
+                }
+            });
+        } else {
+            res.status( 404 ).send({
+                message: 'El usuario no ha podido loguearse!'
+            });
+        }
+    });
+}*/
 
 module.exports    = {
     test,

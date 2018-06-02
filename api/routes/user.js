@@ -13,6 +13,6 @@ var multipart    = require('connect-multiparty'),
 
 api.get('/test-controller', AuthController.test );
 api.post('/login', AuthController.login );
-api.post('/register', UserController.saveUser );
+api.post('/register', md_auth.ensureAuth, UserController.saveUser );
 
 module.exports = api;
