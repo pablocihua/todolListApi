@@ -83,10 +83,6 @@ function saveUser( req, res ){
                         }
                         res.status( _status ).send( response );
                     }));
-
-                    response.message    = 'Se ha registrado el usuario';
-                    response.user    = user;
-                    res.status( 200 ).send( response );
                 });
             }
         },
@@ -103,9 +99,41 @@ function saveUser( req, res ){
     }
 }
 
-
 function uploadImage( req, res ){
-    res.status( 200 ).send({ message: 'Upload image' });
+    //res.status( 200 ).send({ message: 'Upload image' });
+    var userId = req.params.id;
+    var file_name = 'No subido';
+console.log( req.params, req.user );
+    if( req.files ){
+        var file_path = req.files.image.path;
+        var file_split = file_path.split('\\');
+        var file_split = file_path.split('/');
+        var file_name = file_split[ file_split.length -1 ];
+
+        var ext_split = file_name.split('.');
+        var file_ext = ext_split[ 1 ];
+console.log( file_ext, file_path, file_name )
+        if( file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif' ){
+            if( userId != req.user.sub ){
+                res.status( 500 ).send({ message: 'No tienes permiso para actualizar imagen'});
+            } else {
+                // The user it haven't permission.
+            }
+            res.status( 200 ).send({ message: 'Extención valida'});
+        } else {
+            fs.unlink( file_path, ( err ) => {
+                if( err ){
+                    res.status( 200 ).send({ message: 'Extención no valida y fichero no borrado'});
+                } else {
+                    res.status( 200 ).send({ message: 'Extención no valida'});
+                }
+            });
+        }
+    } else {
+        res.status( 200 ).send({
+            message: 'No se han subido archivos'
+        });
+    }
 }
 
 function validaterequiredFields( fields, _interface ){

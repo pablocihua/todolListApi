@@ -29,5 +29,117 @@
             "time": 59,
             "unit": "minutes"
         }
+    },
+    "acl": {
+        "action": [
+            {
+                "name": "login",
+                "alias": "Acceso",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "action"
+            }, {
+                "name": "logout",
+                "alias": "Salir",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "action"
+            }, {
+                "name": "register",
+                "alias": "Registro",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "action"
+            }, {
+                "name": "upload",
+                "alias": "Subir archivo",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "action"
+            }
+        ],
+        "role": [
+            {
+                "name": "ROLE_GUEST",
+                "alias": "Invitado",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "role"
+            }, {
+                "name": "ROLE_EMPLOYEE",
+                "alias": "Empleado",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "role"
+            }, {
+                "name": "ROLE_ADMIN",
+                "alias": "Admin",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "role"
+            }
+        ],
+        "controllers": [{
+                "name": "AuthController",
+                "alias": "Ingresar",
+                "path": "/login",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "controller"
+            }, {
+                "name": "UserController",
+                "alias": "Registro de usuario",
+                "path": "/register-user",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "controller"
+            }, {
+                "name": "UserController",
+                "alias": "Registro de usuario",
+                "path": "/upload-image-user/:id",
+                "active": true,
+                "alive": true,
+                "tipodedocumento": "controller"
+            }
+        ],
+        "permission": [
+            {
+                "action": "login",
+                "name": "Acceso",
+                "controller": "/login",
+                "active": true,
+                "alive": true,
+                "inherit": false,
+                "role": "ROLE_GUEST",
+                "tipodedocumento": "permission"
+            }, {
+                "action": "register",
+                "name": "Crear Compra",
+                "controller": "/register-buy",
+                "active": false,
+                "alive": true,
+                "inherit": true,
+                "role": "ROLE_EMPLOYEE",
+                "tipodedocumento": "permission"
+            }, {
+                "action": "register-user",
+                "name": "Registrar Usuario",
+                "controller": "/register-user",
+                "active": true,
+                "alive": true,
+                "inherit": false,
+                "role": "ROLE_ADMIN",
+                "tipodedocumento": "permission"
+            }, {
+                "action": "uploap",
+                "name": "Agregar Imagen Usuario",
+                "controller": "/upload-image-user/:id",
+                "active": true,
+                "alive": true,
+                "inherit": false,
+                "role": "ROLE_ADMIN",
+                "tipodedocumento": "permission"
+            }
+        ]
     }
 }

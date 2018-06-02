@@ -26,7 +26,7 @@ module.exports = function(){
         },
         "role": {
             "type": "String",
-            "default": "GUEST",
+            "default": "ROLE_GUEST",
             "required": "Kindly enter the name of the user"
         },
         "created_at": {
