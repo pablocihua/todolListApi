@@ -11,7 +11,8 @@ var secret      = _config.jwt.secret,
 
     var payload    = {
         sub: user._id,
-        //"rev": user.rev,
+        "name": user.name,
+        "surname": user.surname,
         "username": user.username,
         "password": user.password,
         "email": user.email,

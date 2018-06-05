@@ -81,54 +81,6 @@ function login( req, res ){
     );
 }
 
-/*function loginNano( req, res ){
-    var params      = req.body,
-    email       = params.email,
-    password    = params.password;
-    
-    const viewUrl    = dbNames.views.users.by_email;
-
-    var mangoQuery    = {
-        include_docs: false,
-        "selector": {
-            "email": { "$eq": email.toLowerCase() },
-            "tipodedocumento": { "$eq": "user" }
-        },
-        limit: 1,
-        skip: 0
-    };
-
-    couch
-    .view( 'users', 'by_email', mangoQuery, ( error, data ) => {
-        // console.log( data, params );
-        var user    = data.rows[ 0 ].value;
-        if( user ){
-            bcrypt.compare( password, user.password, ( err, check ) => {
-                if( check ){
-                    if( params.gettoken ){
-                        res.status( 200 ).send({
-                            token: jwt.createToken( user ),
-                            apiPaths: _views // dbNames.views
-                        });
-                    } else {
-                        res.status( 200 ).send( user );
-                    }
-                } else {
-                    res.status( 200 ).send({
-                        title: 'Acceso a Usuarios',
-                        text: 'Ok',
-                        message: 'El usuario "' + email.toUpperCase() + '" no ha podido loguearse correctamente'
-                    });
-                }
-            });
-        } else {
-            res.status( 404 ).send({
-                message: 'El usuario no ha podido loguearse!'
-            });
-        }
-    });
-}*/
-
 module.exports    = {
     test,
     login

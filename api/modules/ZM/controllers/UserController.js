@@ -19,11 +19,14 @@ const Models       = require('../models/UserModel'),
 
 // Services
 var jwt    = require('../../acl/services/JwtService');
-
+// Configs database.
 const couchDb    = config.databases.couchdb,
       dbNames    = couchDb.dbnames,
       dbName     = dbNames.dbName,
-      viewUrl    = dbNames.views.users.by_email;
+      viewUrl    = dbNames.views.users.by_email,
+// Configs extensions allowed
+      lengths    = config.extensions_allowed.images
+;
 
 function saveUser( req, res ){
     // Final response.
@@ -37,15 +40,6 @@ function saveUser( req, res ){
     var    params    = req.body;
     var _validate    = validaterequiredFields( params, UserI );
     if( _validate.isValid ){
-        // console.log( UserViews )
-        /* var first = { startkey: params.email },
-        seconds = {{{ endkey: params.email }, sort: 'asc'}, skip: 0};
-        UserViews.findOneByEmail( first, seconds, function( error, result ){
-            if( error ){ res.status( 401 ).send({ message: error }) };
-            console.log( error, result )
-            return result;
-        }); */
-
         var mangoQuery    = {
             "selector": {
                 "email": { "$eq": params.email.toLowerCase() },
@@ -100,61 +94,64 @@ function uploadImage( req, res ){
     var file_name    = 'No subido';
     // Final response.
     var response    = {
-        title: 'Adjunta Imagen',
-        message: '',
+        title: 'Guarda Imagen',
+        message: 'Se guardo la imagen del usuario!',
         text: 'Ok',
     },
     _status    = 200;
-// console.log( req.body, req.params, req.user );
-    if( req.files ){
-        var file_path     = req.files.image.path;
-        var file_split    = file_path.split('\\');
-        var file_split    = file_path.split('/');
-        var file_name     = file_split[ file_split.length -1 ];
 
-        var ext_split    = file_name.split('.');
-        var file_ext     = ext_split[ 1 ];
-// console.log( file_ext, file_path, file_name, ext_split[ 0 ] )
+    if( req.files ){
+        var Image         = req.files.image,
+            contentType   = Image.type,
+            file_path     = Image.path,
+            file_split    = file_path.split('\\'),
+            file_split    = file_path.split('/'),
+            file_name     = file_split[ file_split.length -1 ],
+            ext_split     = file_name.split('.'),
+            file_ext      = ext_split[ 1 ];
+
         if( file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif' ){
-            // if( userId != req.user.sub ){
-            //     res.status( 500 ).send({ message: 'No tienes permiso para actualizar imagen'});
-            // } else {
-                // The user it haven't permission.
-                couchNano.list({ startkey: userId, endkey: userId  }, function( err, body ){
-                    _status    = 200;
-                    if( err ){
-                        response.message    = 'No existe el registro';
-                        res.status( _status ).send( response );
-                    } else {
-                        response.message    = 'Operación exitosa!';
-                        response.user       = req.user;
-                        response.user2       = body.rows[ 0 ];
-                        if( body.rows.length ){
-                            body.rows.forEach( row => {
-                                // bcrypt.compare( userId, row.value.rev, ( err, check ) => {
-                                    console.log( userId,row.value.rev );
-                                    // if( check ){
-                                        couchNano
-                                        .attachment
-                                        .insert( 'image', file_name, req.file, 'image/png',
-                                            { rev: row.value.rev },
-                                            function( err, _body ){
-                                                if( !err )
-                                                    console.log( _body );
-                                            });
-                                        res.status( _status ).send( response );
-                                        console.log( row )
-                                    //} else {
-                                    //    response.message    = 'No existe el registro';
-                                    //    res.status( _status ).send( response );
-                                    //}
-                                // });
-                            });
-                        }
-                    }
-                });
-                //couchNano.attachment();
-            // }
+            couchNano.get( userId, function( err, doc ){
+                _status    = 200;
+                if( err ){
+                    response.message    = 'No existe el registro';
+                    res.status( _status ).send( response );
+                } else {
+                    file_name    = doc.email+"."+file_ext; // Name of the image.
+                    doc[ Image.fieldName ]    = file_name; // Update the file name.
+
+                    couchNano
+                    .insert( doc, userId,
+                        function( _err, _res ){
+                            if( _err ){
+                                _status    = 500;
+                                response.message    = "Error al actualizar el usuario";
+                                res.status( _status ).send( response );
+                            } else {
+                                couchNano.get( userId, function( err, _doc ){
+                                    couchNano
+                                    .attachment
+                                    .insert( userId, file_name, req.file, contentType,
+                                        { rev: _doc._rev },
+                                        function( err, _body ){
+                                            if( err ){
+                                                _status    = 500;
+                                                response.message    = "Error al actualizar el usuario";
+                                            } else {
+                                                // All finished well.
+                                                response.user     = req.user;
+                                                response.user2    = doc;
+                                            }
+                                            // console.log( response )
+                                            fs.unlinkSync( file_path );
+                                            res.status( _status ).send( response );
+                                        }
+                                    );
+                                });
+                            }
+                        });
+                }
+            });
         } else {
             fs.unlink( file_path, ( err ) => {
                 if( err ){

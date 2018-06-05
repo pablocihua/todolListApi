@@ -30,6 +30,17 @@
             "unit": "minutes"
         }
     },
+    "extensions_allowed": {
+        "images": [
+            { "name": "png", "active": true },
+            { "name": "jpg", "active": true },
+            { "name": "jpeg", "active": true },
+            { "name": "gif", "active": true }
+        ],
+        "docs": [
+            { "name": "pdf", "active": true }
+        ]
+    },
     "acl": {
         "action": [
             {
