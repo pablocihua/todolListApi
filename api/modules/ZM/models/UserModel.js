@@ -1,13 +1,13 @@
 'use strict'
 
-const config       = require('../../config/config'),
+const config       = require('../../../../config/config'),
       couch        = config.databases.couchdb,
       dbNames      = couch.dbnames,
       dbName       = dbNames.dbName,
       viewUsers    = dbNames.views.users;
 
 var couchDbModel    = require('couchdb-model'),
-    couchDb         = require('./couchdbModel');
+    couchDb         = require('../../../modules/acl/models/CouchdbModel');
 
 var Model    = couchDbModel( couchDb.conexionNano() ),
     UserViews    = couchDbModel( couchDb.conexionNano(), {

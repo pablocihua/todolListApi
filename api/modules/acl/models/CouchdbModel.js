@@ -5,7 +5,7 @@
 var NodeCouchDb    = require('node-couchdb');
 var nano    = require('nano');
 
-const config     = require('../../config/config'),
+const config     = require('../../../../config/config'),
       couchDb    = config.databases.couchdb,
       dbNames    = couchDb.dbnames,
       dbName     = dbNames.dbName,

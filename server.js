@@ -5,15 +5,10 @@ var express        = require('express'),
     NodeCouchDb    = require('node-couchdb'),
     app            =  express();
 
-/* const config    = require('./config/config');
-
-const couch    = new NodeCouchDb({
-    auth: config.databases.couchdb.auth
-}); */
-
 // Load routes.
-var cfdi_route        = require('./api/routes/cfdiRouter'),
-    authentication    = require('./api/routes/user');
+var cfdi_route        = require('./api/modules/ZM/routes/CfdiRouter'),
+    authentication    = require('./api/modules/ZM/routes/UserRouter'),
+    acl               = require('./api/modules/acl/routes/AclRouter');
 
 // Middlewares of body-parser
 app.use( bodyParser.urlencoded({ extended: true }));
@@ -29,7 +24,8 @@ app.use( function( req, res, next ){
 });
 
 //routes( app );
-app.use('/api', cfdi_route );
 app.use('/api', authentication );
+app.use('/api', acl );
+app.use('/api', cfdi_route );
 
 module.exports    = app;

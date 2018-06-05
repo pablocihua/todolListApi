@@ -5,14 +5,14 @@ var bcrypt    = require('bcrypt-nodejs'),
     fs        = require('fs'),
     path      = require('path');
 // Loads configs and conects Db.
-const config     = require('../../config/config'),
-      CouchDB    = require('../models/couchdbModel'),
+const config     = require('../../../../config/config'),
+      CouchDB    = require('../models/CouchdbModel'),
       couchNano    = CouchDB.conexionNano(),
       couchNode    = CouchDB.conexionNodeCouch();
       _views       = CouchDB.getViews( couchNano );
 
 // Service jwt
-var jwt    = require('../services/jwt');
+var jwt    = require('../services/JwtService');
 // Call to config database.
 const couchDb    = config.databases.couchdb,
       dbNames    = couchDb.dbnames,

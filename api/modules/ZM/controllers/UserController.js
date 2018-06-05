@@ -6,20 +6,19 @@ var bcrypt    = require('bcrypt-nodejs'),
     path      = require('path');
 
 // Interfaces
-var UserI    = require('../models/interfaces/user')();
+var UserI    = require('../models/interfaces/UserInterface')();
 
 // Models
-const Models       = require('../models/userModel'),
-      CouchDB      = require('../models/couchdbModel'),
+const Models       = require('../models/UserModel'),
+      CouchDB      = require('../../acl/models/CouchdbModel'),
       couchNano    = CouchDB.conexionNano(),
       couchNode    = CouchDB.conexionNodeCouch(),
-    //   UserModel    = Models.Model.create( UserI ),
       UserViews    = Models.UserViews,
       // Configs
-      config       = require('../../config/config');
+      config       = require('../../../../config/config');
 
 // Services
-var jwt    = require('../services/jwt');
+var jwt    = require('../../acl/services/JwtService');
 
 const couchDb    = config.databases.couchdb,
       dbNames    = couchDb.dbnames,
@@ -57,9 +56,6 @@ function saveUser( req, res ){
         couchNode
         .mango( dbName, mangoQuery, {} )
         .then( ( data ) => {
-        // couchNano
-        // .view( 'users', 'by_email', mangoQuery, ( error, data ) => {
-            // var user    = data.rows[ 0 ].value;
             if( data.data.docs.length ){
                 res.status( _status ).send({
                     message: 'El usuario no puede registrarse.',
@@ -100,26 +96,65 @@ function saveUser( req, res ){
 }
 
 function uploadImage( req, res ){
-    //res.status( 200 ).send({ message: 'Upload image' });
-    var userId = req.params.id;
-    var file_name = 'No subido';
-console.log( req.params, req.user );
+    var userId       = req.params.id;
+    var file_name    = 'No subido';
+    // Final response.
+    var response    = {
+        title: 'Adjunta Imagen',
+        message: '',
+        text: 'Ok',
+    },
+    _status    = 200;
+// console.log( req.body, req.params, req.user );
     if( req.files ){
-        var file_path = req.files.image.path;
-        var file_split = file_path.split('\\');
-        var file_split = file_path.split('/');
-        var file_name = file_split[ file_split.length -1 ];
+        var file_path     = req.files.image.path;
+        var file_split    = file_path.split('\\');
+        var file_split    = file_path.split('/');
+        var file_name     = file_split[ file_split.length -1 ];
 
-        var ext_split = file_name.split('.');
-        var file_ext = ext_split[ 1 ];
-console.log( file_ext, file_path, file_name )
+        var ext_split    = file_name.split('.');
+        var file_ext     = ext_split[ 1 ];
+// console.log( file_ext, file_path, file_name, ext_split[ 0 ] )
         if( file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif' ){
-            if( userId != req.user.sub ){
-                res.status( 500 ).send({ message: 'No tienes permiso para actualizar imagen'});
-            } else {
+            // if( userId != req.user.sub ){
+            //     res.status( 500 ).send({ message: 'No tienes permiso para actualizar imagen'});
+            // } else {
                 // The user it haven't permission.
-            }
-            res.status( 200 ).send({ message: 'Extención valida'});
+                couchNano.list({ startkey: userId, endkey: userId  }, function( err, body ){
+                    _status    = 200;
+                    if( err ){
+                        response.message    = 'No existe el registro';
+                        res.status( _status ).send( response );
+                    } else {
+                        response.message    = 'Operación exitosa!';
+                        response.user       = req.user;
+                        response.user2       = body.rows[ 0 ];
+                        if( body.rows.length ){
+                            body.rows.forEach( row => {
+                                // bcrypt.compare( userId, row.value.rev, ( err, check ) => {
+                                    console.log( userId,row.value.rev );
+                                    // if( check ){
+                                        couchNano
+                                        .attachment
+                                        .insert( 'image', file_name, req.file, 'image/png',
+                                            { rev: row.value.rev },
+                                            function( err, _body ){
+                                                if( !err )
+                                                    console.log( _body );
+                                            });
+                                        res.status( _status ).send( response );
+                                        console.log( row )
+                                    //} else {
+                                    //    response.message    = 'No existe el registro';
+                                    //    res.status( _status ).send( response );
+                                    //}
+                                // });
+                            });
+                        }
+                    }
+                });
+                //couchNano.attachment();
+            // }
         } else {
             fs.unlink( file_path, ( err ) => {
                 if( err ){

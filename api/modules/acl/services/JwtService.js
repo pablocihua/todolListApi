@@ -2,7 +2,7 @@
 
 var jwt       = require('jwt-simple'),
     moment    = require('moment'),
-    _config   = require('../../config/config');
+    _config   = require('../../../../config/config');
 
 exports.createToken    = function( user ){
 var secret      = _config.jwt.secret,
@@ -11,6 +11,7 @@ var secret      = _config.jwt.secret,
 
     var payload    = {
         sub: user._id,
+        //"rev": user.rev,
         "username": user.username,
         "password": user.password,
         "email": user.email,

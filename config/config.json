@@ -79,24 +79,23 @@
                 "tipodedocumento": "role"
             }
         ],
-        "controllers": [{
+        "controllers": [
+            {
                 "name": "AuthController",
-                "alias": "Ingresar",
-                "path": "/login",
+                "title": "Ingresar",
                 "active": true,
                 "alive": true,
                 "tipodedocumento": "controller"
             }, {
                 "name": "UserController",
-                "alias": "Registro de usuario",
-                "path": "/register-user",
+                "title": "Registro de usuario",
                 "active": true,
                 "alive": true,
                 "tipodedocumento": "controller"
             }, {
                 "name": "UserController",
-                "alias": "Registro de usuario",
-                "path": "/upload-image-user/:id",
+                "title": "Registro de usuario",
+                "route": "upload-image-user/:id",
                 "active": true,
                 "alive": true,
                 "tipodedocumento": "controller"
@@ -106,7 +105,8 @@
             {
                 "action": "login",
                 "name": "Acceso",
-                "controller": "/login",
+                "controller": "AuthController",
+                "route": "login",
                 "active": true,
                 "alive": true,
                 "inherit": false,
@@ -115,7 +115,7 @@
             }, {
                 "action": "register",
                 "name": "Crear Compra",
-                "controller": "/register-buy",
+                "controller": "register-buy",
                 "active": false,
                 "alive": true,
                 "inherit": true,
@@ -124,7 +124,8 @@
             }, {
                 "action": "register-user",
                 "name": "Registrar Usuario",
-                "controller": "/register-user",
+                "controller": "UserController",
+                "route": "register-user",
                 "active": true,
                 "alive": true,
                 "inherit": false,
@@ -133,13 +134,15 @@
             }, {
                 "action": "uploap",
                 "name": "Agregar Imagen Usuario",
-                "controller": "/upload-image-user/:id",
+                "controller": "UserController",
+                "route": "upload-image-user/:id",
                 "active": true,
                 "alive": true,
                 "inherit": false,
                 "role": "ROLE_ADMIN",
                 "tipodedocumento": "permission"
             }
-        ]
+        ],
+        "configs": {}
     }
 }
