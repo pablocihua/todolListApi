@@ -110,7 +110,10 @@ function uploadImage( req, res ){
             ext_split     = file_name.split('.'),
             file_ext      = ext_split[ 1 ];
 
-        if( file_ext == 'png' || file_ext == 'jpg' || file_ext == 'jpeg' || file_ext == 'gif' ){
+        let allowed   = lengths.filter( obj => {
+            return obj.name == file_ext && obj.active === true
+        });
+        if( allowed.length ){
             couchNano.get( userId, function( err, doc ){
                 _status    = 200;
                 if( err ){
