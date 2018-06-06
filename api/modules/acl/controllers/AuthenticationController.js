@@ -71,6 +71,8 @@ function login( req, res ){
             });
         } else {
             res.status( 404 ).send({
+                title: 'Acceso Incorrecto',
+                text: 'Ok',
                 message: 'El usuario no ha podido loguearse!'
             });
         }

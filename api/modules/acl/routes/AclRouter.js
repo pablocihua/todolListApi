@@ -23,5 +23,6 @@ api.post('/login', AuthController.login );
 
 api.get('/acl-controller', AclController.index );
 api.post('/get-actions/:id', AclController.getActions );
+api.post('/get-permissions/:id', AclController.getPermissions );
 
 module.exports = api;
