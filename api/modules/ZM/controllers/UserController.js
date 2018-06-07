@@ -39,7 +39,7 @@ var UserActions    = {
         _status    = 200;
         // Get request params.
         var    params    = req.body;
-        var _validate    = validaterequiredFields( params, UserI );
+        var _validate    = UserActions.validaterequiredFields( params, UserI );
         if( _validate.isValid ){
             var mangoQuery    = {
                 "selector": {
@@ -60,7 +60,7 @@ var UserActions    = {
                     // Encripting password
                     bcrypt.hash( params.password, null, null, ( err, hash ) => {
                         params.password = hash;
-                        UserI    = fillInterface( params, UserI );
+                        UserI    = UserActions.fillInterface( params, UserI );
                         var UserModel    = Models.Model.create( UserI );
                         // Save user in database.
                         UserModel.save(( function( error ){
@@ -85,7 +85,8 @@ var UserActions    = {
             response.message    = 'Se ha registrado el usuario.';
             response.user       = req.user;
         } else {
-            response.message    = 'El usuario no puede registrarse.';
+            response.validate = _validate;
+            response.message    = 'Error al validar el usuario.';
             res.status( _status ).send( response );
         }
     },
@@ -179,7 +180,8 @@ var UserActions    = {
         };
 
         Object.keys( fields ).forEach(( field, position ) => {
-            if( _interface[ field ].hasOwnProperty('required') && !fields[ field ].length ){
+            if( _interface[ field ].hasOwnProperty('required') 
+            && !fields[ field ].length ){
                 _Result.fields.push({
                     name: field,
                     required: _interface[ field ].required || 'This field is required'

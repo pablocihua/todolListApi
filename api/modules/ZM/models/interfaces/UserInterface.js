@@ -35,14 +35,15 @@ module.exports = function(){
         },
         "created_by": {
             "type": "String",
-            "required": "Kindly enter the User who made the record"
+            "default": "Systems"
         },
         "updated_at": {
-            "type": "Date"
+            "type": Date,
+            "default": Date.now()
         },
         "updated_by": {
             "type": "String",
-            "required": "Kindly enter the User who updated the record"
+            "default": "Systems"
         },
         "alive": {
             "type": Boolean,

@@ -59,7 +59,7 @@ function login( req, res ){
                             apiPaths: _views // dbNames.views
                         });
                     } else {
-                        res.status( 200 ).send( user );
+                        res.status( 200 ).send({ user: user });
                     }
                 } else {
                     res.status( 200 ).send({
