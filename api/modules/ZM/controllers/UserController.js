@@ -214,8 +214,8 @@ var UserActions    = {
     },
 
     getUsers: function( req, res ){
-        var params    = req.params,
-        keys          = params.id,
+        var params    = null,
+        keys          = null,
         _query        = {},
         // Final response.
         response    = {
@@ -224,7 +224,11 @@ var UserActions    = {
             message: 'Regresando el listado de usuarios',
             data: []
         },
-        _status    = 200;
+        _status    = 200,
+        items      = [];
+
+        params    = ( req && req.hasOwnProperty('params')) ? req.params : [];
+        keys      = ( params && params.hasOwnProperty('id')) ? params.id : [];
 
         if( keys.length > 1 && keys != '0' ){
             _query.keys    = [ keys ];
@@ -233,7 +237,7 @@ var UserActions    = {
         }
 
         couchNano
-        .view( 'acl', 'usuarios', _query, ( error, data ) => {
+        .view( 'users', 'all', _query, ( error, data ) => {
             var items    = [];
             data         = data["rows"];
 

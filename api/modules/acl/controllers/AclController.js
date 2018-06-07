@@ -179,7 +179,7 @@ var aclActions    = {
 
         couchNano
         .view( 'acl', 'permissions', _query, ( error, data ) => {
-            data         = data["rows"];
+            data    = data["rows"];
 
             data.forEach( item => {
                 var _item    = { id: item.id };
