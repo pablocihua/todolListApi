@@ -91,6 +91,69 @@ var UserActions    = {
         }
     },
 
+    editUser: function( req, res ){
+        // Final response.
+        var response    = {
+            title: 'Registro de Usuarios',
+            message: '',
+            text: 'Ok',
+        },
+        _status    = 200;
+        // Get request params.
+        var    params    = req.body,
+               userId    = req.params.id;
+        var _validate    = UserActions.validaterequiredFields( params, UserI );
+        if( _validate.isValid ){
+            var mangoQuery    = {
+                "selector": {
+                    "_id": { "$eq": userId },
+                    "tipodedocumento": { "$eq": "user" }
+                }
+            };
+
+            couchNode
+            .mango( dbName, mangoQuery, {} )
+            .then( ( data ) => {
+                if( data.data.docs.length ){
+                    res.status( _status ).send({
+                        message: 'El usuario no puede modificarse.',
+                        u: params
+                    });
+                } else {
+                    // Encripting password
+                    bcrypt.hash( params.password, null, null, ( err, hash ) => {
+                        params.password = hash;
+                        UserI    = UserActions.fillInterface( params, UserI );
+                        var UserModel    = Models.Model.create( UserI );
+                        // Save user in database.
+                        UserModel.save(( function( error ){
+                            if( error ){
+                                _status    = 500;
+                                response.message    = 'Error al modificar el usuario';
+                            } else {
+                                _status    = 200;
+                                response.message    = 'Se ha modificado el usuario';
+                                response.user       = UserModel;
+                            }
+                            res.status( _status ).send( response );
+                        }));
+                    });
+                }
+            },
+            ( err ) => {
+                res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
+            }
+            );
+
+            response.message    = 'Se ha modificado el usuario.';
+            response.user       = req.user;
+        } else {
+            response.validate = _validate;
+            response.message    = 'Error al validar el usuario.';
+            res.status( _status ).send( response );
+        }
+    },
+
     uploadImage: function( req, res ){
         var userId       = req.params.id;
         var file_name    = 'No subido';
@@ -102,7 +165,7 @@ var UserActions    = {
         },
         _status    = 200;
 
-        if( req.files ){
+        if( Object.keys( req.files ).length ){
             var Image         = req.files.image,
                 contentType   = Image.type,
                 file_path     = Image.path,
@@ -176,6 +239,8 @@ var UserActions    = {
             }
         } else {
             res.status( 200 ).send({
+                text: "Ok",
+                title: "Registro de Usuarios",
                 message: 'No se han subido archivos'
             });
         }

@@ -14,6 +14,7 @@ var multipart    = require('connect-multiparty'),
 api.post('/register-user', md_auth.ensureAuth, UserController.saveUser );
 api.post('/upload-image-user/:id', [ md_auth.ensureAuth, md_upload ], UserController.uploadImage ); // , md_hasPermission.hasPermission
 api.post('/get-users/:id', UserController.getUsers );
+api.post('/edit-user/:id', UserController.editUser );
 api.get('/get-image-user/:id/:imageFile', UserController.getImageAttachment );
 
 module.exports = api;
