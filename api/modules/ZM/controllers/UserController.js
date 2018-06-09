@@ -122,7 +122,7 @@ var UserActions    = {
                         response.message    = 'No existe el registro';
                         res.status( _status ).send( response );
                     } else {
-                        file_name    = doc.email+"."+file_ext; // Name of the image.
+                        // file_name    = doc.email+"."+file_ext; // Name of the image.
                         doc[ Image.fieldName ]    = file_name; // Update the file name.
 
                         couchNano
@@ -133,25 +133,33 @@ var UserActions    = {
                                     response.message    = "Error al actualizar el usuario";
                                     res.status( _status ).send( response );
                                 } else {
-                                    couchNano.get( userId, function( err, _doc ){
-                                        couchNano
-                                        .attachment
-                                        .insert( userId, file_name, req.file, contentType,
-                                            { rev: _doc._rev },
-                                            function( err, _body ){
-                                                if( err ){
-                                                    _status    = 500;
-                                                    response.message    = "Error al actualizar el usuario";
-                                                } else {
-                                                    // All finished well.
-                                                    response.user     = req.user;
-                                                    response.user2    = doc;
-                                                }
-                                                // console.log( response )
-                                                fs.unlinkSync( file_path );
-                                                res.status( _status ).send( response );
-                                            }
-                                        );
+                                    fs.readFile( file_path, ( err, attch ) => {
+                                        if( err ){
+                                            _status    = 500;
+                                            response.message    = "Error al leer la imagen del usuario";
+                                            res.status( _status ).send( response );
+                                        } else {
+                                            couchNano.get( userId, function( err, _doc ){
+                                                couchNano
+                                                .attachment
+                                                .insert( userId, file_name, attch, contentType,
+                                                    { rev: _doc._rev },
+                                                    function( err, _body ){
+                                                        if( err ){
+                                                            _status    = 500;
+                                                            response.message    = "Error al guardar la imagen del usuario";
+                                                        } else {
+                                                            // All finished well.
+                                                            response.user     = req.user;
+                                                            response.user2    = doc;
+                                                        }
+                                                        // console.log( response )
+                                                        fs.unlinkSync( file_path );
+                                                        res.status( _status ).send( response );
+                                                    }
+                                                );
+                                            });
+                                        }
                                     });
                                 }
                             });
@@ -248,6 +256,18 @@ var UserActions    = {
                 _item        = Object.assign( _item, item.value );
                 _item.key    =  item.key
 
+                /* var img = couchNano.attachment
+                    .get( _item.id, _item.image )
+                    .pipe( fs.createWriteStream( _item.image )); */
+                // if( _item.hasOwnProperty('attachments') ){
+                /*    var img = couchNano.attachment
+                        .get( _item.id, _item.image, ( err, body ) => {
+                            fs.writeFileSync( _item.image, body );
+                        });*/
+// console.log( img );
+//                     _item.image = img;
+//                 }
+
                 items.push( _item );
             });
 
@@ -260,6 +280,16 @@ var UserActions    = {
             }
             res.status( _status ).send( response );
         });
+    },
+
+    getImageAttachment: function( req, res ){
+        var id =  req.params.id;
+        var imageFile =  req.params.imageFile;
+
+        couchNano
+        .attachment
+        .get( id, imageFile )
+        .pipe( res );
     }
 }
 
