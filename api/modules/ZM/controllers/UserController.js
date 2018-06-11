@@ -177,7 +177,7 @@ var UserActions    = {
         },
         _status    = 200;
 
-        if( req.files ){
+        if( Object.keys( req.files ).length ){
             var Image         = req.files.image,
                 contentType   = Image.type,
                 file_path     = Image.path,
@@ -251,6 +251,8 @@ var UserActions    = {
             }
         } else {
             res.status( 200 ).send({
+                text: "Ok",
+                title: "Registro de Usuarios",
                 message: 'No se han subido archivos'
             });
         }
