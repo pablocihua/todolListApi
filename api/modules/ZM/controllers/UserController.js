@@ -129,19 +129,22 @@ var UserActions    = {
                     // Encripting password in case it was changed.
                     _passHash     = ( body.password.length ) ? bcrypt.hashSync( body.password ) : '';
                     if( _passHash.length ){
-                        _data.password    =_passHash;
+                        body.password    = _passHash;
                     } else {
                         // It keepers the same value.
+                        delete body.password;
                     }
 
                     UserI    = UserActions.fillInterface( body, _data );
-                    console.log( UserI )
                     couchNode
                     .update( dbName, UserI )
                     .then(( saved ) => {
-                        console.log( saved );
-                        response.message    = 'Se ha actualizado el usuario';
-                        response.user       = UserI;
+                        if( saved.data.ok ){
+                            response.message    = 'Se ha actualizado el usuario';
+                            response.user       = UserI;
+                        } else {
+                            response.message    = 'No se pudo actualizar el usuario';
+                        }
                         res.status( _status ).send( response );
                     },
                     ( err ) => {
