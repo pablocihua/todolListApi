@@ -38,7 +38,7 @@ var UserActions    = {
         },
         _status    = 200;
         // Get request params.
-        var    params    = req.body;
+        var params       = req.body;
         var _validate    = UserActions.validaterequiredFields( params, UserI );
         if( _validate.isValid ){
             var mangoQuery    = {
@@ -84,6 +84,81 @@ var UserActions    = {
 
             response.message    = 'Se ha registrado el usuario.';
             response.user       = req.user;
+        } else {
+            response.validate = _validate;
+            response.message    = 'Error al validar el usuario.';
+            res.status( _status ).send( response );
+        }
+    },
+
+    updateUser: function( req, res ){
+        // Final response.
+        var response    = {
+            title: 'Actualización de Usuarios',
+            message: '',
+            text: 'Ok',
+        },
+        _status    = 200;
+        // Get request params.
+        var params       = req.params,
+            body         = req.body;
+
+        let newUserI    = UserI;
+        if( body.password.length ){
+            // It has to encrypting the pass
+        } else {
+            delete newUserI.password
+        }
+
+        let _validate    = UserActions.validaterequiredFields( body, newUserI );
+        if( _validate.isValid ){
+            var mangoQuery    = {
+                "selector": {
+                    "_id": { "$eq": params.id },
+                    "tipodedocumento": { "$eq": "user" }
+                }
+            };
+            
+            couchNode
+            .mango( dbName, mangoQuery, {} )
+            .then( ( data ) => {
+                let _data    = data.data.docs;
+                if( _data.length ){
+                    let _passHash    = '';
+                    _data         = _data[ 0 ];
+                    // Encripting password in case it was changed.
+                    _passHash     = ( body.password.length ) ? bcrypt.hashSync( body.password ) : '';
+                    if( _passHash.length ){
+                        _data.password    =_passHash;
+                    } else {
+                        // It keepers the same value.
+                    }
+
+                    UserI    = UserActions.fillInterface( body, _data );
+                    console.log( UserI )
+                    couchNode
+                    .update( dbName, UserI )
+                    .then(( saved ) => {
+                        console.log( saved );
+                        response.message    = 'Se ha actualizado el usuario';
+                        response.user       = UserI;
+                        res.status( _status ).send( response );
+                    },
+                    ( err ) => {
+                        response.message    = 'Error al actualizar el usuario. ' + err;
+                        res.status( 500 ).send( response )
+                    });
+                } else {
+                    res.status( _status ).send({
+                        message: 'El usuario no puede actualizarse.',
+                        u: params
+                    });
+                }
+            },
+            ( err ) => {
+                res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
+            }
+            );
         } else {
             response.validate = _validate;
             response.message    = 'Error al validar el usuario.';
@@ -188,14 +263,18 @@ var UserActions    = {
         };
 
         Object.keys( fields ).forEach(( field, position ) => {
-            if( _interface[ field ].hasOwnProperty('required') 
-            && !fields[ field ].length ){
-                _Result.fields.push({
-                    name: field,
-                    required: _interface[ field ].required || 'This field is required'
-                });
+            if( _interface.hasOwnProperty( field )){
+                if( _interface[ field ].hasOwnProperty('required') 
+                && !fields[ field ].length ){
+                    _Result.fields.push({
+                        name: field,
+                        required: _interface[ field ].required || 'This field is required'
+                    });
+                } else {
+                    // The field has a value.
+                }
             } else {
-                // The field has a value.
+                // The field is not a property of object.
             }
         });
 
