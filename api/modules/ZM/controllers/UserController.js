@@ -200,9 +200,33 @@ var UserActions    = {
                         response.message    = 'No existe el registro';
                         res.status( _status ).send( response );
                     } else {
+                        /* if( doc.hasOwnProperty('_attachments')){
+                            if( doc._attachments[ doc.image ] ){
+                                couchNano.attachment.destroy(
+                                    doc._id,
+                                    doc.image,
+                                    { rev: doc._rev },
+                                    function( er, rs ){
+                                        if( er ){
+                                            _status    = 500;
+                                            response.message    = "Error al guardar la imagen del usuario";
+                                        } else {
+                                            // All finished well.
+                                            response.user     = req.user;
+                                            response.user2    = doc;
+                                        }
+                                        fs.unlinkSync( file_path );
+                                        res.status( _status ).send( response );
+                                    }
+                                );
+                            }
+                        } else {
+                            // It has'nt any attachement.
+                        } */
                         // file_name    = doc.email+"."+file_ext; // Name of the image.
                         doc[ Image.fieldName ]    = file_name; // Update the file name.
 
+                        // Updates the image's name.
                         couchNano
                         .insert( doc, userId,
                             function( _err, _res ){

@@ -17,7 +17,7 @@ app.use( bodyParser.json() );
 // Config head and cors
 app.use( function( req, res, next ){
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Accept-Control-Allow-Request-Method');
+    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, X-Csrf-Token, Content-Type, Accept, Accept-Control-Allow-Request-Method');
     res.header('Access-control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
     next();
