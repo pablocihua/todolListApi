@@ -16,5 +16,7 @@ api.post('/update-user/:id', md_auth.ensureAuth, UserController.updateUser );
 api.post('/upload-image-user/:id', [ md_auth.ensureAuth, md_upload ], UserController.uploadImage ); // , md_hasPermission.hasPermission
 api.post('/get-users/:id', UserController.getUsers );
 api.get('/get-image-user/:id/:imageFile', UserController.getImageAttachment );
+api.delete('/remove-image-user/:id/:imageFile', md_auth.ensureAuth, UserController.removeImage );
+api.post('/searching-user', md_auth.ensureAuth, UserController.searchUser );
 
 module.exports = api;

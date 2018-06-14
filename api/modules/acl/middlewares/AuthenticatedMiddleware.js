@@ -9,7 +9,7 @@ var secret    = _config.jwt.secret;
 exports.ensureAuth    = function( req, res, next ){
     // Final response.
     var response    = {
-        title: 'Registro de Usuarios',
+        title: 'Validación de Usuarios',
         message: '',
         text: 'Ok',
     },
@@ -18,6 +18,8 @@ exports.ensureAuth    = function( req, res, next ){
     if( !req.headers.authorization ){
         _status    = 403;
         response.message    = 'The request does not have any authentication header!';
+    } else {
+        // The request has headers.
     }
     // Get the token by header and delete the quotes.
     var token;
@@ -37,9 +39,9 @@ exports.ensureAuth    = function( req, res, next ){
 
     if( _status ){
         res.status( _status ).send( response );
+    } else {
+        req.user    = payload;
+
+        next();
     }
-
-    req.user    = payload;
-
-    next();
 }

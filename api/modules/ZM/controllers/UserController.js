@@ -200,32 +200,7 @@ var UserActions    = {
                         response.message    = 'No existe el registro';
                         res.status( _status ).send( response );
                     } else {
-                        /* if( doc.hasOwnProperty('_attachments')){
-                            if( doc._attachments[ doc.image ] ){
-                                couchNano.attachment.destroy(
-                                    doc._id,
-                                    doc.image,
-                                    { rev: doc._rev },
-                                    function( er, rs ){
-                                        if( er ){
-                                            _status    = 500;
-                                            response.message    = "Error al guardar la imagen del usuario";
-                                        } else {
-                                            // All finished well.
-                                            response.user     = req.user;
-                                            response.user2    = doc;
-                                        }
-                                        fs.unlinkSync( file_path );
-                                        res.status( _status ).send( response );
-                                    }
-                                );
-                            }
-                        } else {
-                            // It has'nt any attachement.
-                        } */
-                        // file_name    = doc.email+"."+file_ext; // Name of the image.
                         doc[ Image.fieldName ]    = file_name; // Update the file name.
-
                         // Updates the image's name.
                         couchNano
                         .insert( doc, userId,
@@ -283,6 +258,52 @@ var UserActions    = {
                 message: 'No se han subido archivos'
             });
         }
+    },
+    
+    removeImage: function( req, res ){
+        let params     = req.params,
+            userId     = params.id,
+            image      = params.imageFile,
+            _status    = 200;
+        // Final response.
+        var response    = {
+            title: 'Eliminar Imagen',
+            message: 'Se eliminó la imagen del usuario!',
+            text: 'Ok',
+        };
+
+        couchNano.get( userId, function( err, doc ){
+            if( err ){
+                response.message    = 'No existe el registro a remplazar';
+                res.status( _status ).send( response );
+            } else {
+                if( doc.hasOwnProperty('_attachments')){
+                    if( doc._attachments[ image ]){
+                        couchNano.attachment.destroy(
+                            userId,
+                            image,
+                            { rev: doc._rev },
+                            function( er, rs ){
+                                if( er ){
+                                    _status    = 500;
+                                    response.message    = "Error al borrar la imagen del usuario";
+                                } else {
+                                    // All finished well And continues the process.
+                                }
+                                res.status( _status ).send( response );
+                            }
+                        );
+                    } else {
+                        response.message    = "No existe imagen del usuario";
+                        res.status( _status ).send( response );
+                    }
+                } else {
+                    // It has'nt any attachement.
+                    response.message    = "No existe la imagen del usuario";
+                    res.status( _status ).send( response );
+                }
+            }
+        });
     },
 
     validaterequiredFields: function( fields, _interface ){
@@ -364,18 +385,6 @@ var UserActions    = {
                 _item        = Object.assign( _item, item.value );
                 _item.key    =  item.key
 
-                /* var img = couchNano.attachment
-                    .get( _item.id, _item.image )
-                    .pipe( fs.createWriteStream( _item.image )); */
-                // if( _item.hasOwnProperty('attachments') ){
-                /*    var img = couchNano.attachment
-                        .get( _item.id, _item.image, ( err, body ) => {
-                            fs.writeFileSync( _item.image, body );
-                        });*/
-// console.log( img );
-//                     _item.image = img;
-//                 }
-
                 items.push( _item );
             });
 
@@ -398,6 +407,61 @@ var UserActions    = {
         .attachment
         .get( id, imageFile )
         .pipe( res );
+    },
+
+    searchUser: function( req, res ){
+        // Final response.
+        var response    = {
+                title: 'Busqueda de Usuarios',
+                message: '',
+                text: 'Ok',
+            },
+            _status    = 200,
+        // Get request params.
+            params    = req.body;
+
+        var selector    = {
+                "tipodedocumento": { "$eq": "user" },
+                "$or": []
+            },
+            sort    = [],
+            mangoQuery    = {
+                "selector": selector,
+                "sort": sort
+            };
+
+        Object.keys( params ).forEach(( val ) => {
+            let regex         = {},
+                _fieldSort    = {};
+            regex[ val ]      = {"$regex": "(?i)"+params[ val ]};
+            _fieldSort[ val ] = "desc";
+            selector["$or"].push( regex );
+            sort.push( _fieldSort );
+
+        });
+
+        mangoQuery.selector    = Object.assign( mangoQuery.selector, selector );
+
+        couchNode
+        .mango( dbName, mangoQuery, {} )
+        .then( ( data ) => {
+            let _data    = data.data.docs;
+            if( _data.length ){
+                response.data    = _data;
+
+                res.status( _status ).send( response );
+            } else {
+                res.status( _status ).send({
+                    message: 'El usuario no puede encontrarse.',
+                    u: params,
+                    data: []
+                });
+            }
+        },
+        ( err ) => {
+            res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
+        }
+        );
     }
 }
 
