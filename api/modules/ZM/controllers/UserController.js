@@ -367,7 +367,7 @@ var UserActions    = {
             _status    = 200,
             items      = new Array,
             paging     = config.pagination;
-console.log( req.body )
+
         body      = ( req && req.hasOwnProperty('body'  )) ? req.body   : [];
         params    = ( req && req.hasOwnProperty('params')) ? req.params : [];
         keys      = ( params && params.hasOwnProperty('id')) ? params.id : [];
@@ -416,6 +416,70 @@ console.log( req.body )
             }
             res.status( _status ).send( response );
         });
+    },
+
+    getImageAttachment: function( req, res ){
+        var id =  req.params.id;
+        var imageFile =  req.params.imageFile;
+
+        couchNano
+        .attachment
+        .get( id, imageFile )
+        .pipe( res );
+    },
+
+    searchUser: function( req, res ){
+        // Final response.
+        var response    = {
+                title: 'Busqueda de Usuarios',
+                message: '',
+                text: 'Ok',
+            },
+            _status    = 200,
+        // Get request params.
+            params    = req.body;
+
+        var selector    = {
+                "tipodedocumento": { "$eq": "user" },
+                "$or": []
+            },
+            sort    = [],
+            mangoQuery    = {
+                "selector": selector,
+                "sort": sort
+            };
+
+        Object.keys( params ).forEach(( val ) => {
+            let regex         = {},
+                _fieldSort    = {};
+            regex[ val ]      = {"$regex": "(?i)"+params[ val ]};
+            _fieldSort[ val ] = "desc";
+            selector["$or"].push( regex );
+            //sort.push( _fieldSort ); // It does not works, maybe the instruction it does not well.
+        });
+
+        mangoQuery.selector    = Object.assign( mangoQuery.selector, selector );
+
+        couchNode
+        .mango( dbName, mangoQuery, {} )
+        .then( ( data ) => {
+            let _data    = data.data.docs;
+            if( _data.length ){
+                response.data    = _data;
+
+                res.status( _status ).send( response );
+            } else {
+                res.status( _status ).send({
+                    message: 'El usuario no puede encontrarse.',
+                    u: params,
+                    data: []
+                });
+            }
+        },
+        ( err ) => {
+            res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
+        }
+        );
     },
 // Intenté mejorar el metódo para reutilizarlo, pero no funcionó el 'SORT'.
     getUsers2: function( req, res ){
@@ -483,71 +547,6 @@ console.log( mangoQuery )
         },
         ( err ) => {
             res.status( 500 ).send( err )
-        }
-        );
-    },
-
-    getImageAttachment: function( req, res ){
-        var id =  req.params.id;
-        var imageFile =  req.params.imageFile;
-
-        couchNano
-        .attachment
-        .get( id, imageFile )
-        .pipe( res );
-    },
-
-    searchUser: function( req, res ){
-        // Final response.
-        var response    = {
-                title: 'Busqueda de Usuarios',
-                message: '',
-                text: 'Ok',
-            },
-            _status    = 200,
-        // Get request params.
-            params    = req.body;
-
-        var selector    = {
-                "tipodedocumento": { "$eq": "user" },
-                "$or": []
-            },
-            sort    = [],
-            mangoQuery    = {
-                "selector": selector,
-                "sort": sort
-            };
-
-        Object.keys( params ).forEach(( val ) => {
-            let regex         = {},
-                _fieldSort    = {};
-            regex[ val ]      = {"$regex": "(?i)"+params[ val ]};
-            _fieldSort[ val ] = "desc";
-            selector["$or"].push( regex );
-            sort.push( _fieldSort );
-
-        });
-
-        mangoQuery.selector    = Object.assign( mangoQuery.selector, selector );
-
-        couchNode
-        .mango( dbName, mangoQuery, {} )
-        .then( ( data ) => {
-            let _data    = data.data.docs;
-            if( _data.length ){
-                response.data    = _data;
-
-                res.status( _status ).send( response );
-            } else {
-                res.status( _status ).send({
-                    message: 'El usuario no puede encontrarse.',
-                    u: params,
-                    data: []
-                });
-            }
-        },
-        ( err ) => {
-            res.status( 500 ).send({ message: 'Error al comprobar el usuario. ' + err })
         }
         );
     }
