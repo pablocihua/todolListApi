@@ -354,18 +354,21 @@ var UserActions    = {
 
     getUsers: function( req, res ){
         var params    = null,
-        keys          = null,
-        _query        = {},
+            body      = null,
+            keys      = null,
+            _query    = {},
         // Final response.
-        response    = {
-            title: 'Lista de usuarios',
-            text: 'Ok',
-            message: 'Regresando el listado de usuarios',
-            data: []
-        },
-        _status    = 200,
-        items      = [];
-
+            response    = {
+                title: 'Lista de usuarios',
+                text: 'Ok',
+                message: 'Regresando el listado de usuarios',
+                data: []
+            },
+            _status    = 200,
+            items      = new Array,
+            paging     = config.pagination;
+console.log( req.body )
+        body      = ( req && req.hasOwnProperty('body'  )) ? req.body   : [];
         params    = ( req && req.hasOwnProperty('params')) ? req.params : [];
         keys      = ( params && params.hasOwnProperty('id')) ? params.id : [];
 
@@ -375,11 +378,27 @@ var UserActions    = {
             // Does not sent any params.
         }
 
+        _query.limit    = paging.perPage;
+        if( Object.keys( body ).length ){
+            Object.keys( body ).forEach(( field ) => {
+                _query[ field ]    = body[ field ];
+            });
+        } else {
+            // It did not send any params in body.
+            _query.skip    = 0;
+        }
+
         couchNano
         .view( 'users', 'all', _query, ( error, data ) => {
-            var items    = [];
-            data         = data["rows"];
+            console.log( data, ( data.total_rows % 2 ) )
+            var items        = [],
+                _totalPage   = parseInt( data.total_rows / paging.perPage );
 
+            _totalPage    += ( data.total_rows % 2 ) ? 1 : 0;
+            response.totalData    = data.total_rows;
+            response.totalPage    = _totalPage;
+            response.perPage      = paging.perPage;
+            data    = data["rows"];
             data.forEach( item => {
                 var _item    = { id: item.id };
                 _item        = Object.assign( _item, item.value );
@@ -397,6 +416,75 @@ var UserActions    = {
             }
             res.status( _status ).send( response );
         });
+    },
+// Intenté mejorar el metódo para reutilizarlo, pero no funcionó el 'SORT'.
+    getUsers2: function( req, res ){
+        // Final response.
+        var response    = {
+                title: 'Lista de Usuarios',
+                message: '',
+                text: 'Ok',
+            },
+            userId     = null,
+            _status    = 200,
+        // Get request params.
+        params    = ( req && req.hasOwnProperty('params')) ? req.params : [];
+        userId    = ( params && params.hasOwnProperty('id')) ? params.id : [];
+
+        var selector    = {
+                "tipodedocumento": { "$eq": "user" },
+                //"name": { "$regex": "(?i)" },
+                "$or": []
+            },
+            sort    = [],
+            mangoQuery    = {
+                "selector": selector,
+                //"fields": ["name","surname","email","role","username"],
+                //"sort": sort,
+                "limit": 5,
+                "skip": 5
+            };
+
+        if( userId > 0 ){
+            Object.keys( params ).forEach(( val ) => {
+                let regex         = {},
+                    _fieldSort    = {};
+                regex[ val ]      = {"$regex": "(?i)"+params[ val ]};
+                _fieldSort[ val ] = "desc";
+                selector["$or"].push( regex );
+                sort.push( _fieldSort );
+
+            });
+        } else {
+            // Doesn't exist params.
+            delete selector.$or;
+            //sort.push({"name": "asc"})
+        }
+
+        mangoQuery.selector    = Object.assign( mangoQuery.selector, selector );
+        mangoQuery.sort        = sort; //Object.assign( mangoQuery.sort,     sort     );
+console.log( mangoQuery )
+        couchNode
+        .mango( dbName, mangoQuery, {} )
+        .then( ( data ) => {
+            console.log( data )
+            let _data    = data.data.docs;
+            if( _data.length ){
+                response.data    = _data;
+
+                res.status( _status ).send( response );
+            } else {
+                res.status( _status ).send({
+                    message: 'El usuario no puede encontrarse.',
+                    u: params,
+                    data: []
+                });
+            }
+        },
+        ( err ) => {
+            res.status( 500 ).send( err )
+        }
+        );
     },
 
     getImageAttachment: function( req, res ){

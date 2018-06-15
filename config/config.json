@@ -30,6 +30,12 @@
             "unit": "minutes"
         }
     },
+    "pagination": {
+        "page": 1,
+        "perPage": 2,
+        "totalPage": 0,
+        "totalData": 0
+    },
     "extensions_allowed": {
         "images": [
             { "name": "png", "active": true },
