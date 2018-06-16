@@ -26,5 +26,6 @@ api.post('/get-actions/:id', AclController.getActions );
 api.post('/get-roles/:id', AclController.getRoles );
 api.post('/get-controllers/:id', AclController.getControllers );
 api.post('/get-permissions/:id', AclController.getPermissions );
+api.post('/searching-acl', md_auth.ensureAuth, AclController.searchItem );
 
 module.exports = api;

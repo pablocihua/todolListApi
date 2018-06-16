@@ -61,6 +61,7 @@ var UserActions    = {
                     bcrypt.hash( params.password, null, null, ( err, hash ) => {
                         params.password = hash;
                         UserI    = UserActions.fillInterface( params, UserI );
+
                         var UserModel    = Models.Model.create( UserI );
                         // Save user in database.
                         UserModel.save(( function( error ){
@@ -379,6 +380,7 @@ var UserActions    = {
         }
 
         _query.limit    = paging.perPage;
+        _query.alive    = "true";
         if( Object.keys( body ).length ){
             Object.keys( body ).forEach(( field ) => {
                 _query[ field ]    = body[ field ];
@@ -390,11 +392,16 @@ var UserActions    = {
 
         couchNano
         .view( 'users', 'all', _query, ( error, data ) => {
-            console.log( data, ( data.total_rows % 2 ) )
             var items        = [],
-                _totalPage   = parseInt( data.total_rows / paging.perPage );
+                _totalPage   = 1;
 
-            _totalPage    += ( data.total_rows % 2 ) ? 1 : 0;
+            if( data.total_rows > paging.perPage ){
+                _totalPage    = parseInt( data.total_rows / paging.perPage );
+                _totalPage    += ( data.total_rows % paging.perPage ) ? 1 : 0;
+            } else {
+                // The total rows is less or equal to perPage.
+            }
+
             response.totalData    = data.total_rows;
             response.totalPage    = _totalPage;
             response.perPage      = paging.perPage;
