@@ -3,6 +3,7 @@
 var express = require('express');
 
 var api    = express.Router();
+var _api    = express.Router();
 // Specials Middleware.
 var multipart    = require('connect-multiparty');
 // Middlewares
@@ -12,11 +13,13 @@ var md_auth          = require('../middlewares/AuthenticatedMiddleware'),
 var AuthController    = require('../controllers/AuthenticationController'),
     AclController     = require('../controllers/AclController');
 
-// var permissions    = AclController.getPermissions();
-// console.log( __dirname );
+// console.log( __dirname+'/..' );
 // for( var ind in AclController ){
-//     console.log(  ind );
+//     if( ind === 'properties' && typeof AclController[ ind ] == 'object' )
+//         console.log( ind );
 // }
+
+// var api 
 
 api.get('/test-controller', AuthController.test );
 api.post('/login', AuthController.login );

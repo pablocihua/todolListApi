@@ -8,6 +8,7 @@ var express        = require('express'),
 // Load routes.
 var cfdi_route        = require('./api/modules/ZM/routes/CfdiRouter'),
     authentication    = require('./api/modules/ZM/routes/UserRouter'),
+    client            = require('./api/modules/ZM/routes/ClientRouter'),
     acl               = require('./api/modules/acl/routes/AclRouter');
 
 // Middlewares of body-parser
@@ -27,5 +28,6 @@ app.use( function( req, res, next ){
 app.use('/api', authentication );
 app.use('/api', acl );
 app.use('/api', cfdi_route );
+app.use('/api', client );
 
 module.exports    = app;

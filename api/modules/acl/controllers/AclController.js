@@ -1,3 +1,4 @@
+#!/usr/bin/env node --no-warnings
 'use strict'
 
 // Modules
@@ -45,42 +46,24 @@ var aclActions    = {
             // Does not sent any params.
         }
 
-        couchNano
-        .view( 'acl', 'actions', _query, ( error, data ) => {
-            var actions   = [];
-            data    = data["rows"];
-
-            data.forEach( action => {
-                var _action    = { id: action.id };
-                _action        = Object.assign( _action, action.value );
-                _action.key    =  action.key
-
-                actions.push( _action );
-            });
-
-            if( actions.length ){
-                _status    = 200;
-                response.data    = actions;
-            } else {
-                _status     = 404;
-                response.message    = 'No existe información sobre acciones!';
-            }
-            res.status( _status ).send( response );
-        });
+        getItems(
+            res,
+            response,
+            {view: 'acl', items: 'actions', query: _query, options: {} }
+        );
     },
 
     getRoles: function( req, res ){
         var params    = req.params,
             keys      = params.id,
             _query    = {},
-        // Final response.
+            // Final response.
             response    = {
                 title: 'Lista de roles',
                 text: 'Ok',
                 message: 'Regresando el listado de roles',
                 data: []
-            },
-            _status    = 200;
+            };
 
         if( keys.length > 1 && keys != '0' ){
             _query.keys    = [ keys ];
@@ -88,28 +71,11 @@ var aclActions    = {
             // Does not sent any params.
         }
 
-        couchNano
-        .view( 'acl', 'roles', _query, ( error, data ) => {
-            var items    = [];
-            data         = data["rows"];
-
-            data.forEach( item => {
-                var _item    = { id: item.id };
-                _item        = Object.assign( _item, item.value );
-                _item.key    =  item.key
-
-                items.push( _item );
-            });
-
-            if( items.length ){
-                _status    = 200;
-                response.data    = items;
-            } else {
-                _status     = 404;
-                response.message    = 'No existe información sobre roles!';
-            }
-            res.status( _status ).send( response );
-        });
+        getItems(
+            res,
+            response,
+            {view: 'acl', items: 'roles', query: _query, options: {} }
+        );
     },
 
     getControllers: function( req, res ){
@@ -131,28 +97,11 @@ var aclActions    = {
             // Does not sent any params.
         }
 
-        couchNano
-        .view( 'acl', 'controllers', _query, ( error, data ) => {
-            var items    = [];
-            data         = data["rows"];
-
-            data.forEach( item => {
-                var _item    = { id: item.id };
-                _item        = Object.assign( _item, item.value );
-                _item.key    =  item.key
-
-                items.push( _item );
-            });
-
-            if( items.length ){
-                _status    = 200;
-                response.data    = items;
-            } else {
-                _status     = 404;
-                response.message    = 'No existe información sobre controllers!';
-            }
-            res.status( _status ).send( response );
-        });
+        getItems(
+            res,
+            response,
+            {view: 'acl', items: 'controllers', query: _query, options: {} }
+        );
     },
 
     getPermissions: function( req, res ){
@@ -178,31 +127,11 @@ var aclActions    = {
             // Does not sent any params.
         }
 
-        couchNano
-        .view( 'acl', 'permissions', _query, ( error, data ) => {
-            data    = data["rows"];
-
-            data.forEach( item => {
-                var _item    = { id: item.id };
-                _item        = Object.assign( _item, item.value );
-                _item.key    =  item.key
-
-                items.push( _item );
-            });
-
-            if( items.length ){
-                _status    = 200;
-                response.data    = items;
-            } else {
-                _status     = 404;
-                response.message    = 'No existe información sobre permissions!';
-            }
-
-            if( res )
-                res.status( _status ).send( response );
-            else
-                return items;
-        });
+        getItems(
+            res,
+            response,
+            {view: 'acl', items: 'permissions', query: _query, options: {} }
+        );
     },
 
     searchItem: function( req, res ){
@@ -260,10 +189,34 @@ var aclActions    = {
     }
 }
 
-function getPermissions(){
-    // items
+function getItems( res, response, options ){
+    var _status    = 200;
 
-    return items;
+    couchNano
+    .view( options.view, options.items, options.query, 
+        ( error, data ) => {
+            var items    = [];
+            data         = data["rows"];
+
+            data.forEach( item => {
+                var _item    = { id: item.id };
+                _item        = Object.assign( _item, item.value );
+                _item.key    =  item.key
+
+                items.push( _item );
+            });
+
+            if( items.length ){
+                _status    = 200;
+                response.data    = items;
+            } else {
+                _status     = 404;
+                response.message    = 'No existe información!';
+            }
+            if( res && res.hasOwnProperty('status') )
+            res.status( _status ).send( response );
+        }
+    );
 }
 
 module.exports    = aclActions;
