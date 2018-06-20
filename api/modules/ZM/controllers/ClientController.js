@@ -39,10 +39,11 @@ var ClientActions    = {
         // Get request params.
         var params       = req.body;
         var _validate    = ClientActions.validaterequiredFields( params, ClientI );
+
         if( _validate.isValid ){
             var mangoQuery    = {
                 "selector": {
-                    "email": { "$eq": params.name.toLowerCase() },
+                    "rfc": { "$eq": params.rfc },
                     "tipodedocumento": { "$eq": "client" }
                 }
             };
@@ -85,7 +86,7 @@ var ClientActions    = {
             response.Client       = req.Client;
         } else {
             response.validate = _validate;
-            response.message    = 'Error al validar el cliente.';
+            response.message    = 'Error al validar los datos del cliente.';
             res.status( _status ).send( response );
         }
     },
@@ -118,7 +119,7 @@ var ClientActions    = {
             .then( ( data ) => {
                 let _data    = data.data.docs;
                 if( _data.length ){
-                    _data         = _data[ 0 ];
+                    _data    = _data[ 0 ];
 
                     ClientI    = ClientActions.fillInterface( body, _data );
                     couchNode
@@ -299,12 +300,17 @@ var ClientActions    = {
 
         Object.keys( fields ).forEach(( field, position ) => {
             if( _interface.hasOwnProperty( field )){
-                if( _interface[ field ].hasOwnProperty('required') 
-                && !fields[ field ].length ){
-                    _Result.fields.push({
-                        name: field,
-                        required: _interface[ field ].required || 'This field is required'
-                    });
+                if(( _interface[ field ].hasOwnProperty('required') 
+                    && !fields[ field ].length )){
+
+                    if( typeof fields[ field ] === 'boolean' ){
+                        // It does not add like a required.
+                    } else {
+                        _Result.fields.push({
+                            name: field,
+                            required: _interface[ field ].required || 'This field is required'
+                        });
+                    }
                 } else {
                     // The field has a value.
                 }
@@ -363,7 +369,7 @@ var ClientActions    = {
         }
 
         _query.limit    = paging.perPage;
-        _query.alive    = "true";
+        _query.alive    = false;
         if( Object.keys( body ).length ){
             Object.keys( body ).forEach(( field ) => {
                 _query[ field ]    = body[ field ];
@@ -374,9 +380,10 @@ var ClientActions    = {
         }
 
         couchNano
-        .view( 'clients', 'all', _query, ( error, data ) => {
-            var items        = [],
-                _totalPage   = 1;
+        .view( 'clients', 'all?descending=true', _query, ( error, data ) => { // &startkey=["true","alive"]&endkey=["true","alive"]
+            console.log( error )
+            var items         = [],
+                _totalPage    = 1;
 
             if( data.total_rows > paging.perPage ){
                 _totalPage    = parseInt( data.total_rows / paging.perPage );
@@ -401,7 +408,7 @@ var ClientActions    = {
                 _status    = 200;
                 response.data    = items;
             } else {
-                _status     = 404;
+                _status    = 200;
                 response.message    = 'No existe información sobre Clientes!';
             }
             res.status( _status ).send( response );
