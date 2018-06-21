@@ -391,7 +391,7 @@ var UserActions    = {
         }
 
         couchNano
-        .view( 'users', 'all', _query, ( error, data ) => {
+        .view( 'users', 'all?descending=true', _query, ( error, data ) => {
             var items        = [],
                 _totalPage   = 1;
 
