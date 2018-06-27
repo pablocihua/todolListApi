@@ -44,7 +44,7 @@ var ConfigActions    = {
             var mangoQuery    = {
                 "selector": {
                     "name": { "$eq": params.name },
-                    "tipodedocumento": { "$eq": "catalog" }
+                    "tipodedocumento": { "$eq": "configuration" }
                 }
             };
 
@@ -380,10 +380,14 @@ var ConfigActions    = {
         }
 
         couchNano
-        .view( 'config', 'all?descending=true', _query, ( error, data ) => { // &startkey=["true","alive"]&endkey=["true","alive"]
+        .view( 'config', 'all?descending=true', _query, ( error, data ) => {
             console.log( error )
             var items         = [],
                 _totalPage    = 1;
+            if( error ){
+                response.message    = 'No existe información sobre Catálogos!';
+                res.status( _status ).send( response );
+            }
 
             if( data.total_rows > paging.perPage ){
                 _totalPage    = parseInt( data.total_rows / paging.perPage );
