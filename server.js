@@ -3,14 +3,28 @@
 var express        = require('express'),
     bodyParser     = require('body-parser'),
     NodeCouchDb    = require('node-couchdb'),
-    app            =  express();
+    app            =  express(),
+    fs             = require('fs'),
+    path           = require('path');
 
-// Load routes.
-var cfdi_route        = require('./api/modules/ZM/routes/CfdiRouter'),
-    authentication    = require('./api/modules/ZM/routes/UserRouter'),
-    client            = require('./api/modules/ZM/routes/ClientRouter'),
-    config            = require('./api/modules/ZM/routes/ConfigRouter'),
-    acl               = require('./api/modules/acl/routes/AclRouter');
+const modulesFolder    = [
+    './api/modules/ZM/routes',
+    './api/modules/acl/routes'
+];
+
+var walkSync = function( dir, filelist ){
+    var files    = fs.readdirSync( dir );
+    filelist     = filelist || [];
+    files.forEach( function( file ){
+        if( fs.statSync( path.join( dir, file )).isDirectory() ){
+            filelist = walkSync( path.join( dir, file ), filelist );
+        } else {
+            filelist.push(file);
+        }
+    });
+
+    return filelist;
+};
 
 // Middlewares of body-parser
 app.use( bodyParser.urlencoded({ extended: true }));
@@ -25,11 +39,14 @@ app.use( function( req, res, next ){
     next();
 });
 
-//routes( app );
-app.use('/api', authentication );
-app.use('/api', acl );
-app.use('/api', cfdi_route );
-app.use('/api', client );
-app.use('/api', config );
+// Load routes.
+modulesFolder.forEach( dir => {
+    var listRoutes    = [];
+    listRoutes        = listRoutes.concat( walkSync( dir, [] ));
+    listRoutes.forEach( file => {
+        var _route    = './' + path.join( dir, file );
+        app.use('/api', require( _route ) );
+    });
+});
 
 module.exports    = app;
